@@ -10,7 +10,7 @@ const MainPage = ({ data, mutate }) => {
       title: Title,
       body: Body,
     };
-    await fetch(`${ENDPOINT}/api/todos`, {
+    await fetch(`${ENDPOINT}/api`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

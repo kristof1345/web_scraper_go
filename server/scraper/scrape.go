@@ -12,7 +12,7 @@ type Fact struct {
 	Description string `json:"description"`
 }
 
-func ScrapeWeb() ([]byte, error) {
+func ScrapeWeb(out chan<- []byte) {
 	allFacts := make([]Fact, 0)
 
 	collector := colly.NewCollector(
@@ -38,18 +38,15 @@ func ScrapeWeb() ([]byte, error) {
 
 	collector.Visit("https://www.factretriever.com/rhino-facts")
 
-	// fmt.Println(allFacts)
-	return convertToJson(allFacts)
+	out <- convertToJson(allFacts)
 }
 
-func convertToJson(data []Fact) ([]byte, error) {
+func convertToJson(data []Fact) []byte {
 	jsonData, err := json.Marshal(data)
 
 	if err != nil {
-		return jsonData, err
+		panic(err)
 	}
 
-	// fmt.Println(reflect.TypeOf(jsonData))
-
-	return jsonData, nil
+	return jsonData
 }

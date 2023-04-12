@@ -26,69 +26,29 @@ type Rhinos struct {
 func main() {
 	app := fiber.New()
 
+	chanRes := make(chan []byte)
+
 	var rhinos []Rhinos
 
-	scrapedData, err := scraper.ScrapeWeb()
-
-	if err != nil {
-		fmt.Println("error:", err)
-
-	}
-
-	erro := json.Unmarshal(scrapedData, &rhinos)
-
-	if erro != nil {
-		fmt.Println("error:", erro)
-	}
-
-	// fmt.Printf("%+v", rhinos)
-
 	app.Use(cors.New(cors.Config{
-		// AllowOrigins: "http://localhost:3000",
 		AllowOrigins: "http://127.0.0.1:5173",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	todos := []Todo{}
+	fmt.Println(rhinos)
 
-	app.Get("/healthcheck", func(c *fiber.Ctx) error {
-		return c.SendString("OK")
-	})
+	app.Get("/get", func(c *fiber.Ctx) error {
+		go scraper.ScrapeWeb(chanRes)
 
-	app.Post("/api/todos", func(c *fiber.Ctx) error {
-		todo := &Todo{}
+		scrapedData := <-chanRes
 
-		if err := c.BodyParser(todo); err != nil {
-			return err
-		}
-
-		todo.ID = len(todos) + 1
-
-		todos = append(todos, *todo)
-
-		return c.JSON(todos)
-	})
-
-	app.Patch("/api/todos/:id/done", func(c *fiber.Ctx) error {
-		id, err := c.ParamsInt("id")
+		err := json.Unmarshal(scrapedData, &rhinos)
 		if err != nil {
-			return c.Status(401).SendString("Invalid id")
+			fmt.Println("error:", err)
 		}
 
-		for i, t := range todos {
-			if t.ID == id {
-				todos[i].Done = true
-				break
-			}
-		}
-
-		return c.JSON(todos)
+		return c.JSON(rhinos)
 	})
-
-	app.Get("/api/todos", func(c *fiber.Ctx) error {
-		return c.JSON(rhinos) //todos was here
-	})
-	// fmt.Println(reflect.TypeOf(rhinos))
 
 	log.Fatal(app.Listen(":4000"))
 }
