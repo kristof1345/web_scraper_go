@@ -19,7 +19,7 @@ type Todo struct {
 }
 
 type Rhinos struct {
-	ID          string
+	// ID          string
 	Description string
 }
 
@@ -30,78 +30,94 @@ func main() {
 
 	var rhinos []Rhinos
 
-	// scrapedData := scraper.ScrapeWeb()
-	// go scraper.ScrapeWeb(chanRes)
-
-	// scrapedData := <- chanRes
-
-	// err := json.Unmarshal(scrapedData, &rhinos)
-
-	// if err != nil {
-	// 	fmt.Println("error:", err)
-	// }
-
-	// fmt.Printf("%+v", rhinos)
-
 	app.Use(cors.New(cors.Config{
-		// AllowOrigins: "http://localhost:3000",
 		AllowOrigins: "http://127.0.0.1:5173",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	todos := []Todo{}
+	app.Get("/get", func(c *fiber.Ctx) error {
+		go scraper.ScrapeWeb(chanRes)
 
-	app.Get("/healthcheck", func(c *fiber.Ctx) error {
-		return c.SendString("OK")
-	})
+		scrapedData := <-chanRes
 
-	app.Post("/api/todos", func(c *fiber.Ctx) error {
-		todo := &Todo{}
-
-		if err := c.BodyParser(todo); err != nil {
-			return err
-		}
-
-		todo.ID = len(todos) + 1
-
-		todos = append(todos, *todo)
-
-		return c.JSON(todos)
-	})
-
-	app.Patch("/api/todos/:id/done", func(c *fiber.Ctx) error {
-		id, err := c.ParamsInt("id")
+		err := json.Unmarshal(scrapedData, &rhinos)
 		if err != nil {
-			return c.Status(401).SendString("Invalid id")
+			fmt.Println("error:", err)
 		}
 
-		for i, t := range todos {
-			if t.ID == id {
-				todos[i].Done = true
-				break
-			}
-		}
+		fmt.Println(rhinos)
 
-		return c.JSON(todos)
-	})
-
-	// fmt.Println(reflect.TypeOf(rhinos))
-
-	go scraper.ScrapeWeb(chanRes)
-
-	scrapedData := <-chanRes
-
-	err := json.Unmarshal(scrapedData, &rhinos)
-
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-
-	fmt.Println(rhinos)
-
-	app.Get("/api/todos", func(c *fiber.Ctx) error {
-		return c.JSON(rhinos) //todos was here
+		return c.JSON(rhinos)
 	})
 
 	log.Fatal(app.Listen(":4000"))
+}
+
+
+/ SCRAPER /
+package scraper
+
+import (
+	"encoding/json"
+	"fmt"
+
+	"github.com/gocolly/colly"
+)
+
+type Fact struct {
+	// ID          string `json:"id"`
+	Description string `json:"description"`
+}
+
+func ScrapeWeb(out chan<- []byte) {
+	allFacts := make([]Fact, 0)
+	urls := []string{"https://www.zdnet.com/topic/developer/", "https://www.wired.com/tag/developers/"}
+
+	collector := colly.NewCollector(
+		colly.AllowedDomains("www.zdnet.com", "zdnet.com", "www.wired.com", "wired.com"),
+		// colly.AllowedDomains("www.wired.com", "wired.com"),
+	)
+
+	collector.OnHTML("li.item > a", func(element *colly.HTMLElement) {
+		factDesc := element.Text
+
+		fact := Fact{
+			Description: factDesc,
+		}
+
+		allFacts = append(allFacts, fact)
+	})
+
+	collector.OnHTML(".SummaryItemHedBase-eaxFWE", func(element *colly.HTMLElement) {
+		factDesc := element.Text
+
+		fact := Fact{
+			Description: factDesc,
+		}
+
+		allFacts = append(allFacts, fact)
+	})
+
+	collector.OnRequest(func(request *colly.Request) {
+		fmt.Println("Visiting", request.URL.String())
+	})
+
+	// collector.Visit("https://www.zdnet.com/topic/developer/")
+	// collector.Visit("https://www.wired.com/tag/developers/")
+
+	for _, url := range urls {
+		collector.Visit(url)
+	}
+
+	out <- convertToJson(allFacts)
+}
+
+func convertToJson(data []Fact) []byte {
+	jsonData, err := json.Marshal(data)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return jsonData
 }

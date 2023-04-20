@@ -19,7 +19,7 @@ type Todo struct {
 }
 
 type Rhinos struct {
-	ID          string
+	// ID          string
 	Description string
 }
 
@@ -35,8 +35,6 @@ func main() {
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
-	fmt.Println(rhinos)
-
 	app.Get("/get", func(c *fiber.Ctx) error {
 		go scraper.ScrapeWeb(chanRes)
 
@@ -46,6 +44,8 @@ func main() {
 		if err != nil {
 			fmt.Println("error:", err)
 		}
+
+		fmt.Println(rhinos)
 
 		return c.JSON(rhinos)
 	})

@@ -8,24 +8,33 @@ import (
 )
 
 type Fact struct {
-	ID          string `json:"id"`
+	// ID          string `json:"id"`
 	Description string `json:"description"`
 }
 
 func ScrapeWeb(out chan<- []byte) {
 	allFacts := make([]Fact, 0)
+	urls := []string{"https://www.zdnet.com/topic/developer/", "https://www.wired.com/tag/developers/"}
 
 	collector := colly.NewCollector(
-		colly.AllowedDomains("factretriever.com", "www.factretriever.com"),
+		colly.AllowedDomains("www.zdnet.com", "zdnet.com", "www.wired.com", "wired.com"),
+		// colly.AllowedDomains("www.wired.com", "wired.com"),
 	)
 
-	collector.OnHTML(".factsList li", func(element *colly.HTMLElement) {
-		factId := element.Attr("id")
-
+	collector.OnHTML("li.item > a", func(element *colly.HTMLElement) {
 		factDesc := element.Text
 
 		fact := Fact{
-			ID:          factId,
+			Description: factDesc,
+		}
+
+		allFacts = append(allFacts, fact)
+	})
+
+	collector.OnHTML(".SummaryItemHedBase-eaxFWE", func(element *colly.HTMLElement) {
+		factDesc := element.Text
+
+		fact := Fact{
 			Description: factDesc,
 		}
 
@@ -36,7 +45,12 @@ func ScrapeWeb(out chan<- []byte) {
 		fmt.Println("Visiting", request.URL.String())
 	})
 
-	collector.Visit("https://www.factretriever.com/rhino-facts")
+	// collector.Visit("https://www.zdnet.com/topic/developer/")
+	// collector.Visit("https://www.wired.com/tag/developers/")
+
+	for _, url := range urls {
+		collector.Visit(url)
+	}
 
 	out <- convertToJson(allFacts)
 }
