@@ -85,3 +85,18 @@ button:focus-visible {
 .post:hover {
   border-color: #646cff;
 }
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+button {
+  width: max-content;
+}
+
+input {
+  padding: 5px 10px;
+  min-width: 250px;
+}

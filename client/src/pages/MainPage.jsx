@@ -1,27 +1,38 @@
 import React from "react";
-import { ENDPOINT } from "../App";
+import axios from "axios";
 
-const Title = "iubrgre";
-const Body = "uirbnnrtnk rtntjnrbjnrktnr tnhh rtn krkntj";
-
-const MainPage = ({ data, mutate }) => {
-  async function addTodo() {
+const MainPage = ({ data, setData }) => {
+  function postUrls(e) {
+    let ret;
+    e.preventDefault();
+    let elems = document.getElementsByClassName("url");
+    let urls = [...elems].map((elem) => elem.value);
     const newItem = {
-      title: Title,
-      body: Body,
+      url1: urls[0],
+      url2: urls[1],
     };
-    await fetch(`${ENDPOINT}/api`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newItem),
-    }).then((r) => r.json());
-
-    mutate([...data, newItem]);
+    axios.post("http://localhost:4000/api", newItem).then((r) => {
+      ret = r.data;
+      setData(ret);
+    });
   }
 
-  return <button onClick={addTodo}>Add</button>;
+  // function test(e) {
+  //   e.preventDefault();
+  //   let elems = document.getElementsByClassName("url");
+  //   let urls = [...elems].map((elem) => elem.value);
+  //   console.log(urls);
+  // }
+
+  return (
+    <div>
+      <form onSubmit={(e) => postUrls(e)}>
+        <input type="text" className="url" />
+        <input type="text" className="url" />
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  );
 };
 
 export default MainPage;

@@ -8,17 +8,16 @@ import (
 )
 
 type Fact struct {
-	// ID          string `json:"id"`
 	Description string `json:"description"`
 }
 
-func ScrapeWeb(out chan<- []byte) {
+func ScrapeWeb(out chan<- []byte, s []string) {
 	allFacts := make([]Fact, 0)
-	urls := []string{"https://www.zdnet.com/topic/developer/", "https://www.wired.com/tag/developers/"}
+	// urls := []string{"https://www.zdnet.com/topic/developer/"}
 
 	collector := colly.NewCollector(
-		colly.AllowedDomains("www.zdnet.com", "zdnet.com", "www.wired.com", "wired.com"),
-		// colly.AllowedDomains("www.wired.com", "wired.com"),
+	// colly.AllowedDomains("www.zdnet.com", "zdnet.com", "www.wired.com", "wired.com"),
+	// colly.AllowedDomains("www.wired.com", "wired.com"),
 	)
 
 	collector.OnHTML("li.item > a", func(element *colly.HTMLElement) {
@@ -48,7 +47,7 @@ func ScrapeWeb(out chan<- []byte) {
 	// collector.Visit("https://www.zdnet.com/topic/developer/")
 	// collector.Visit("https://www.wired.com/tag/developers/")
 
-	for _, url := range urls {
+	for _, url := range s {
 		collector.Visit(url)
 	}
 
