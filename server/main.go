@@ -11,8 +11,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
-type Rhinos struct {
-	// ID          string
+type Data struct {
+	URL         string
 	Description string
 }
 
@@ -20,7 +20,7 @@ func main() {
 	app := fiber.New()
 
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://127.0.0.1:5173",
+		AllowOrigins: "http://127.0.0.1:8000",
 		AllowHeaders: "Origin, Content-Type, Accept",
 	}))
 
@@ -67,16 +67,16 @@ func returnPostedData(c *fiber.Ctx) error {
 	}
 	chanRes := make(chan []byte)
 
-	var rhinos []Rhinos
+	var data []Data
 
 	go scraper.ScrapeWeb(chanRes, s)
 
 	scrapedData := <-chanRes
 
-	err := json.Unmarshal(scrapedData, &rhinos)
+	err := json.Unmarshal(scrapedData, &data)
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
-	return c.JSON(rhinos)
+	return c.JSON(data)
 }

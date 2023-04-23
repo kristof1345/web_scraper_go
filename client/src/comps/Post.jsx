@@ -2,9 +2,9 @@ import React from "react";
 
 const Post = ({ post }) => {
   return (
-    <div className="post">
+    <a className="post" href={post.URL} target="_blank">
       <div className="postDesc">{post.Description}</div>
-    </div>
+    </a>
   );
 };
 

@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainPage from "./pages/MainPage";
 import Post from "./comps/post";
 
 function App() {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState(
+    JSON.parse(localStorage.getItem("data")) || []
+  );
+
+  useEffect(() => {
+    localStorage.setItem("data", JSON.stringify(data));
+  }, [data]);
 
   console.log(data);
-
-  let obj = {};
 
   return (
     <div className="App">

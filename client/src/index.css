@@ -27,7 +27,6 @@ body {
   padding: 20px 50px;
   margin: 0;
   display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
 }
@@ -81,9 +80,14 @@ button:focus-visible {
   padding: 10px 20px;
   border-radius: 0.5rem;
   border: 1px solid transparent;
+  color: white;
 }
 .post:hover {
   border-color: #646cff;
+}
+
+.url {
+  min-width: 400px;
 }
 
 form {
