@@ -13,7 +13,7 @@ type Fact struct {
 	Description string `json:"description"`
 }
 
-func ScrapeWeb(out chan<- []byte, s []string) {
+func ScrapeWeb(out chan<- []byte, s []string, e []string) {
 	allFacts := make([]Fact, 0)
 	currURL := ""
 	// urls := []string{"https://www.zdnet.com/topic/developer/"}
@@ -24,7 +24,7 @@ func ScrapeWeb(out chan<- []byte, s []string) {
 	// colly.AllowedDomains("www.wired.com", "wired.com"),
 	)
 
-	collector.OnHTML("li.item > a", func(element *colly.HTMLElement) {
+	collector.OnHTML(e[0], func(element *colly.HTMLElement) {
 		u, err := url.Parse(currURL)
 		if err != nil {
 			panic(err)

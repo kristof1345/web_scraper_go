@@ -55,8 +55,10 @@ func setupRoutes(app *fiber.App) {
 
 func returnPostedData(c *fiber.Ctx) error {
 	URLS := struct {
-		Url1 string `json:"url1"`
-		Url2 string `json:"url2"`
+		Url1  string `json:"url1"`
+		ELem1 string `json:"item1"`
+		Url2  string `json:"url2"`
+		Elem2 string `json:"item2"`
 	}{}
 	if err := c.BodyParser(&URLS); err != nil {
 		return err
@@ -65,11 +67,15 @@ func returnPostedData(c *fiber.Ctx) error {
 		URLS.Url1,
 		URLS.Url2,
 	}
+	e := []string{
+		URLS.ELem1,
+		URLS.Elem2,
+	}
 	chanRes := make(chan []byte)
 
 	var data []Data
 
-	go scraper.ScrapeWeb(chanRes, s)
+	go scraper.ScrapeWeb(chanRes, s, e)
 
 	scrapedData := <-chanRes
 
